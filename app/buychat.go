@@ -15,8 +15,8 @@ type App struct {
 
 func New() (*App, error) {
 	line, err := linebot.New(
-		os.Getenv("LINE_CLIENT_SECRET"),
-		os.Getenv("LINE_CLIENT_TOKEN"),
+		os.Getenv("LINE_CHANNEL_SECRET"),
+		os.Getenv("LINE_CHANNEL_TOKEN"),
 	)
 	if err != nil {
 		return nil, err
