@@ -2,7 +2,7 @@
 ==============
 
 
-![QR Code](https://qr-official.line.me/L/BsqbfocuYK.png)
+![QR Code](http://qr-official.line.me/L/BsqbfocuYK.png)
 
 [![友達追加](https://scdn.line-apps.com/n/line_add_friends/btn/ja.png)](https://line.me/R/ti/p/%40xhe9481d)
 
