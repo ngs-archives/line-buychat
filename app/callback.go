@@ -10,6 +10,8 @@ import (
 	"github.com/line/line-bot-sdk-go/linebot"
 )
 
+const noimgURL = "https://buychat.s3-ap-northeast-1.amazonaws.com/line-carousel-noimg.png"
+
 func (app *App) handleCallback(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, fmt.Sprintf("Method Not Allowed: %v", r.Method), http.StatusMethodNotAllowed)
@@ -52,7 +54,7 @@ func (app *App) handleEvent(event *linebot.Event) error {
 func (app *App) handleTextMessage(replyToken string, message *linebot.TextMessage) error {
 	items := app.searchItems(message.Text)
 	if len(items) == 0 {
-		app.Line.ReplyMessage(replyToken, linebot.NewTextMessage("ごめんなさい、"+message.Text+"に該当する商品はみつかりませんでした"))
+		app.Line.ReplyMessage(replyToken, linebot.NewTextMessage(`ごめんなさい、"`+message.Text+`" に該当する商品はみつかりませんでした`))
 		return nil
 	}
 	var columns []*linebot.CarouselColumn
@@ -64,8 +66,14 @@ func (app *App) handleTextMessage(replyToken string, message *linebot.TextMessag
 		if len(title) > 40 {
 			title = title[0:40]
 		}
+		imgURL := item.LargeImage.URL
+		if imgURL == "" {
+			imgURL = noimgURL
+		} else {
+			imgURL = strings.Replace(imgURL, "http://ecx.images-amazon.com/", "https://images-na.ssl-images-amazon.com/", -1)
+		}
 		column := linebot.NewCarouselColumn(
-			strings.Replace(item.LargeImage.URL, "http://ecx.images-amazon.com/", "https://images-na.ssl-images-amazon.com/", -1),
+			imgURL,
 			string(title[0:len(title)]),
 			item.ItemAttributes.Manufacturer+" ",
 			linebot.NewPostbackTemplateAction("カートに追加", "add-cart-"+item.ASIN, ""),
