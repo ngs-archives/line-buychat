@@ -7,6 +7,11 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/lestrrat/go-apache-logformat",
+			"Comment": "v2.0.0-4-g0f5817c",
+			"Rev": "0f5817c5c9e626d408c4d68e3d90fd7697e97d5f"
+		},
+		{
 			"ImportPath": "github.com/line/line-bot-sdk-go/linebot",
 			"Comment": "1.0.0-41-g8c17d7b",
 			"Rev": "8c17d7b4b461d3b2a8ada80137f991d8f58f60d5"
@@ -14,6 +19,11 @@
 		{
 			"ImportPath": "github.com/ngs/go-amazon-product-advertising-api/amazon",
 			"Rev": "fa57713000b70256ba99c03fd0d70f2ad6e4ded8"
+		},
+		{
+			"ImportPath": "github.com/pkg/errors",
+			"Comment": "v0.7.1",
+			"Rev": "17b591df37844cde689f4d5813e5cea0927d8dd2"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
