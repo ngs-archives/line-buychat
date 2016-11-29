@@ -1,6 +1,7 @@
 package app
 
 import (
+	"log"
 	"net/http"
 	"os"
 
@@ -13,6 +14,7 @@ import (
 type App struct {
 	Line   *linebot.Client
 	Amazon *amazon.Client
+	Log    *log.Logger
 }
 
 // New returns new app
@@ -28,9 +30,11 @@ func New() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+	logger := log.New(os.Stderr, "[buychat]", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
 	app := &App{
 		Line:   line,
 		Amazon: amazon,
+		Log:    logger,
 	}
 	return app, nil
 }
