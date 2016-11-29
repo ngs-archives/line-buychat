@@ -37,6 +37,8 @@ func (app *App) handleCallback(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) handleEvent(event *linebot.Event) error {
+	app.Log.Printf("User:%v Group:%v Room:%v Type:%v",
+		event.Source.UserID, event.Source.GroupID, event.Source.RoomID, event.Source.Type)
 	switch event.Type {
 	case linebot.EventTypeMessage:
 		switch message := event.Message.(type) {
