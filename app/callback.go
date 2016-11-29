@@ -73,7 +73,7 @@ func (app *App) handleTextMessage(replyToken string, message *linebot.TextMessag
 		)
 		columns = append(columns, column)
 	}
-	msg := linebot.NewTemplateMessage("Unsupported client", linebot.NewCarouselTemplate(columns...))
+	msg := linebot.NewTemplateMessage(message.Text+"の検索結果", linebot.NewCarouselTemplate(columns...))
 	json, _ := msg.MarshalJSON()
 	app.Log.Println(string(json))
 	_, err := app.Line.ReplyMessage(replyToken, msg).Do()

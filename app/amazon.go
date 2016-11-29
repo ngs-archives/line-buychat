@@ -13,7 +13,7 @@ func (app *App) searchItems(keyword string) []amazon.Item {
 	res, err := app.Amazon.ItemSearch(param).Do()
 	if err != nil {
 		app.Log.Printf("Got error %v %v", err, param)
-		return res.Items.Item
+		return []amazon.Item{}
 	}
 	return res.Items.Item
 }
