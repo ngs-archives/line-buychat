@@ -82,7 +82,10 @@ func (app *App) handleTextMessage(replyToken string, message *linebot.TextMessag
 		if len(item.ItemAttributes.Author) > 0 && len(item.ItemAttributes.Author[0]) > 0 {
 			label = item.ItemAttributes.Author[0]
 		}
-		if len(label) == 0 && len(item.ItemAttributes.Creator.Name) > 0 {
+		if label == "" && len(item.ItemAttributes.Artist) > 0 {
+			label = item.ItemAttributes.Artist
+		}
+		if label == "" && len(label) == 0 && len(item.ItemAttributes.Creator.Name) > 0 {
 			label = item.ItemAttributes.Creator.Name
 		}
 		column := linebot.NewCarouselColumn(
