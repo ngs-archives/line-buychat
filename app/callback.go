@@ -37,26 +37,36 @@ func (app *App) handleCallback(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) handleEvent(event *linebot.Event) error {
-	if event.Source != nil {
-		app.Log.Printf("User:%v Group:%v Room:%v Type:%v",
-			event.Source.UserID, event.Source.GroupID, event.Source.RoomID, event.Source.Type)
+	if event.Source == nil {
+		return nil
+	}
+	cartKey := ""
+	switch event.Source.Type {
+	case linebot.EventSourceTypeRoom:
+		cartKey = fmt.Sprintf("buychat:line:room:%v", event.Source.RoomID)
+		break
+	case linebot.EventSourceTypeGroup:
+		cartKey = fmt.Sprintf("buychat:line:group:%v", event.Source.GroupID)
+		break
+	case linebot.EventSourceTypeUser:
+		cartKey = fmt.Sprintf("buychat:line:user:%v", event.Source.UserID)
+		break
 	}
 	switch event.Type {
 	case linebot.EventTypeMessage:
 		switch message := event.Message.(type) {
 		case *linebot.TextMessage:
-			return app.handleTextMessage(event.ReplyToken, message)
+			return app.handleTextMessage(event.ReplyToken, message.Text)
 			// case *linebot.LocationMessage:
 			//   TODO: search local travel books
 		}
 	case linebot.EventTypePostback:
-		return app.handlePostbackData(event.ReplyToken, event.Postback.Data)
+		return app.handlePostbackData(event.ReplyToken, event.Postback.Data, cartKey)
 	}
 	return nil
 }
 
-func (app *App) handleTextMessage(replyToken string, message *linebot.TextMessage) error {
-	text := message.Text
+func (app *App) handleTextMessage(replyToken string, text string) error {
 	items := app.searchItems(text)
 	if len(items) == 0 {
 		_, err := app.Line.ReplyMessage(replyToken,
@@ -64,11 +74,14 @@ func (app *App) handleTextMessage(replyToken string, message *linebot.TextMessag
 		return err
 	}
 	var columns []*linebot.CarouselColumn
-	for i, item := range items {
-		if i == 5 {
+	for _, item := range items {
+		if len(columns) == 5 {
 			break
 		}
 		title := []rune(item.ItemAttributes.Title)
+		if len(title) == 0 || len(item.DetailPageURL) == 0 {
+			continue
+		}
 		if len(title) > 40 {
 			title = title[0:40]
 		}
@@ -78,7 +91,7 @@ func (app *App) handleTextMessage(replyToken string, message *linebot.TextMessag
 		} else {
 			imgURL = strings.Replace(imgURL, "http://ecx.images-amazon.com/", "https://images-na.ssl-images-amazon.com/", -1)
 		}
-		label := item.ItemAttributes.Manufacturer
+		label := ""
 		if len(item.ItemAttributes.Author) > 0 && len(item.ItemAttributes.Author[0]) > 0 {
 			label = item.ItemAttributes.Author[0]
 		}
@@ -88,11 +101,17 @@ func (app *App) handleTextMessage(replyToken string, message *linebot.TextMessag
 		if label == "" && len(label) == 0 && len(item.ItemAttributes.Creator.Name) > 0 {
 			label = item.ItemAttributes.Creator.Name
 		}
+		if label == "" {
+			label = item.ItemAttributes.Manufacturer
+		}
+		if label == "" {
+			label = "-"
+		}
 		column := linebot.NewCarouselColumn(
 			imgURL,
 			string(title[0:len(title)]),
-			label+" ",
-			linebot.NewPostbackTemplateAction("カートに追加", "add-cart-"+item.ASIN, ""),
+			label,
+			linebot.NewPostbackTemplateAction("カートに追加", "add-cart:"+item.ASIN, ""),
 			linebot.NewURITemplateAction("Amazon で見る", item.DetailPageURL),
 		)
 		columns = append(columns, column)
@@ -104,6 +123,7 @@ func (app *App) handleTextMessage(replyToken string, message *linebot.TextMessag
 	return err
 }
 
-func (app *App) handlePostbackData(replyToken string, data string) error {
+func (app *App) handlePostbackData(replyToken string, data string, cartKey string) error {
+	app.Log.Println(data, cartKey)
 	return nil
 }
