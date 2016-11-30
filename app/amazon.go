@@ -8,18 +8,19 @@ import (
 
 func (app *App) searchItems(keyword string) []amazon.Item {
 	param := amazon.ItemSearchParameters{
-		Keywords:    keyword,
-		SearchIndex: amazon.SearchIndexAll,
+		Keywords:      keyword,
+		SearchIndex:   amazon.SearchIndexBlended,
+		OnlyAvailable: true,
 		ResponseGroups: []amazon.ItemSearchResponseGroup{
 			amazon.ItemSearchResponseGroupLarge,
 		},
 	}
 	res, err := app.Amazon.ItemSearch(param).Do()
-	xml, _ := xml.Marshal(res.Items)
-	app.Log.Println(string(xml))
 	if err != nil {
 		app.Log.Printf("Got error %v %v", err, param)
 		return []amazon.Item{}
 	}
+	xml, _ := xml.Marshal(res.Items)
+	app.Log.Println(string(xml))
 	return res.Items.Item
 }
