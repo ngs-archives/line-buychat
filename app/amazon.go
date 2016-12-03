@@ -1,7 +1,6 @@
 package app
 
 import (
-	"encoding/xml"
 	"fmt"
 	"os"
 	"strings"
@@ -57,7 +56,5 @@ func (app *App) searchItems(keyword string) ([]amazon.Item, error) {
 		app.Log.Printf("Got error %v %v", err, param)
 		return []amazon.Item{}, err
 	}
-	xml, _ := xml.Marshal(res.Items)
-	app.Log.Println(string(xml))
 	return res.Items.Item, nil
 }
