@@ -2,9 +2,11 @@ package app
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/line/line-bot-sdk-go/linebot"
@@ -12,10 +14,8 @@ import (
 
 const noimgURL = "https://buychat.s3-ap-northeast-1.amazonaws.com/line-carousel-noimg.png"
 
-func (app *App) handleCallback(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, fmt.Sprintf("Method Not Allowed: %v", r.Method), http.StatusMethodNotAllowed)
-	}
+// HandleCallback handles POST /callback
+func (app *App) HandleCallback(w http.ResponseWriter, r *http.Request) {
 	events, err := app.Line.ParseRequest(r)
 	if err != nil {
 		if err == linebot.ErrInvalidSignature {
@@ -56,17 +56,18 @@ func (app *App) handleEvent(event *linebot.Event) error {
 	case linebot.EventTypeMessage:
 		switch message := event.Message.(type) {
 		case *linebot.TextMessage:
-			return app.handleTextMessage(event.ReplyToken, message.Text)
+			return app.HandleTextMessage(event.ReplyToken, message.Text)
 			// case *linebot.LocationMessage:
 			//   TODO: search local travel books
 		}
 	case linebot.EventTypePostback:
-		return app.handlePostbackData(event.ReplyToken, event.Postback.Data, cartKey)
+		return app.HandlePostbackData(event.ReplyToken, event.Postback.Data, cartKey)
 	}
 	return nil
 }
 
-func (app *App) handleTextMessage(replyToken string, text string) error {
+// HandleTextMessage handles text message
+func (app *App) HandleTextMessage(replyToken string, text string) error {
 	items := app.searchItems(text)
 	if len(items) == 0 {
 		_, err := app.Line.ReplyMessage(replyToken,
@@ -107,11 +108,20 @@ func (app *App) handleTextMessage(replyToken string, text string) error {
 		if label == "" {
 			label = "-"
 		}
+		strTitle := string(title[0:len(title)])
+		postbackData := &PostbackData{
+			Action:   PostbackActionAddCart,
+			ASIN:     item.ASIN,
+			ImageURL: imgURL,
+			Label:    label,
+			Title:    strTitle,
+		}
+		bytes, _ := json.Marshal(postbackData)
 		column := linebot.NewCarouselColumn(
 			imgURL,
-			string(title[0:len(title)]),
+			strTitle,
 			label,
-			linebot.NewPostbackTemplateAction("カートに追加", "add-cart:"+item.ASIN, ""),
+			linebot.NewPostbackTemplateAction("カートに追加", string(bytes), ""),
 			linebot.NewURITemplateAction("Amazon で見る", item.DetailPageURL),
 		)
 		columns = append(columns, column)
@@ -123,7 +133,28 @@ func (app *App) handleTextMessage(replyToken string, text string) error {
 	return err
 }
 
-func (app *App) handlePostbackData(replyToken string, data string, cartKey string) error {
-	app.Log.Println(data, cartKey)
+// HandlePostbackData handles postback data
+func (app *App) HandlePostbackData(replyToken string, dataString string, cartKey string) error {
+	app.Log.Println(dataString, cartKey)
+	var data PostbackData
+	if err := json.Unmarshal([]byte(dataString), &data); err != nil {
+		return err
+	}
+	switch data.Action {
+	case PostbackActionAddCart:
+		if err := app.AddCartItem(cartKey, data.ASIN); err != nil {
+			return err
+		}
+		template := linebot.NewButtonsTemplate(data.ImageURL, data.Title, data.Label,
+			linebot.NewURITemplateAction("カートを見る",
+				os.Getenv("HTTP_BASE")+"/cart/"+strings.Replace(strings.Replace(cartKey, cartKeyPrefix, "", 1), ":", "/", 1)),
+		)
+		msg1 := linebot.NewTextMessage(`カートに追加しました`)
+		msg2 := linebot.NewTemplateMessage("カートに追加しました: "+data.Title, template)
+		json, _ := msg2.MarshalJSON()
+		app.Log.Println(string(json))
+		_, err := app.Line.ReplyMessage(replyToken, msg1, msg2).Do()
+		return err
+	}
 	return nil
 }
