@@ -33,7 +33,7 @@
 		},
 		{
 			"ImportPath": "github.com/ngs/go-amazon-product-advertising-api/amazon",
-			"Rev": "57946554eea246b7b865adc9b810540acc9f9447"
+			"Rev": "fa986146f2068a05fd276154d15f7d2216c36778"
 		},
 		{
 			"ImportPath": "github.com/pkg/errors",
