@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/line/line-bot-sdk-go/linebot"
+	"github.com/ngs/go-amazon-product-advertising-api/amazon"
 )
 
 const noimgURL = "https://buychat.s3-ap-northeast-1.amazonaws.com/line-carousel-noimg.png"
@@ -28,7 +29,10 @@ func (app *App) HandleCallback(w http.ResponseWriter, r *http.Request) {
 	for _, event := range events {
 		if err := app.HandleEvent(event); err != nil {
 			app.Log.Printf("Got error %v %v", err, event)
-			http.Error(w, err.Error(), 500)
+			if err = app.ReplyText(event.ReplyToken, "ごめんなさい、検索中にエラーが発生してしまいました"); err != nil {
+				app.Log.Printf("Got error again %v %v", err, event)
+				http.Error(w, err.Error(), 500)
+			}
 			return
 		}
 	}
@@ -68,13 +72,24 @@ func (app *App) HandleEvent(event *linebot.Event) error {
 	return nil
 }
 
+// ReplyText replies text
+func (app *App) ReplyText(replyToken string, text string) error {
+	_, err := app.Line.ReplyMessage(replyToken,
+		linebot.NewTextMessage(text)).Do()
+	return err
+}
+
 // HandleTextMessage handles text message
 func (app *App) HandleTextMessage(replyToken string, text string) error {
-	items := app.searchItems(text)
-	if len(items) == 0 {
-		_, err := app.Line.ReplyMessage(replyToken,
-			linebot.NewTextMessage(`ごめんなさい、"`+text+`" に該当する商品はみつかりませんでした`)).Do()
+	items, err := app.searchItems(text)
+	if err != nil {
+		if apiErr, ok := err.(amazon.Error); ok && apiErr.Code == amazon.RequestThrottled {
+			return app.ReplyText(replyToken, "申し訳ありません、すこし待ってから、もう一度送信してださい")
+		}
 		return err
+	}
+	if len(items) == 0 {
+		return app.ReplyText(replyToken, `ごめんなさい、"`+text+`" に該当する商品はみつかりませんでした`)
 	}
 	var columns []*linebot.CarouselColumn
 	for _, item := range items {
@@ -131,7 +146,7 @@ func (app *App) HandleTextMessage(replyToken string, text string) error {
 	msg := linebot.NewTemplateMessage(`"`+text+`"の検索結果`, linebot.NewCarouselTemplate(columns...))
 	json, _ := msg.MarshalJSON()
 	app.Log.Println(string(json))
-	_, err := app.Line.ReplyMessage(replyToken, msg).Do()
+	_, err = app.Line.ReplyMessage(replyToken, msg).Do()
 	return err
 }
 

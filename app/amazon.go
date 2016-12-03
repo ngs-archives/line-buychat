@@ -43,7 +43,7 @@ func (app *App) setupAmazonClients() error {
 	return nil
 }
 
-func (app *App) searchItems(keyword string) []amazon.Item {
+func (app *App) searchItems(keyword string) ([]amazon.Item, error) {
 	param := amazon.ItemSearchParameters{
 		Keywords:      keyword,
 		SearchIndex:   amazon.SearchIndexBlended,
@@ -55,9 +55,9 @@ func (app *App) searchItems(keyword string) []amazon.Item {
 	res, err := app.Amazon().ItemSearch(param).Do()
 	if err != nil {
 		app.Log.Printf("Got error %v %v", err, param)
-		return []amazon.Item{}
+		return []amazon.Item{}, err
 	}
 	xml, _ := xml.Marshal(res.Items)
 	app.Log.Println(string(xml))
-	return res.Items.Item
+	return res.Items.Item, nil
 }

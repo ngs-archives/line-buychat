@@ -28,12 +28,12 @@
 		},
 		{
 			"ImportPath": "github.com/line/line-bot-sdk-go/linebot",
-			"Comment": "1.0.0-41-g8c17d7b",
-			"Rev": "8c17d7b4b461d3b2a8ada80137f991d8f58f60d5"
+			"Comment": "1.0.0-40-g45c6ba6",
+			"Rev": "45c6ba6104821f9dde1db5ca8886b11d903e1e9e"
 		},
 		{
 			"ImportPath": "github.com/ngs/go-amazon-product-advertising-api/amazon",
-			"Rev": "a9360b22ff0d723a54ff6cfa5c902a141e63fe41"
+			"Rev": "57946554eea246b7b865adc9b810540acc9f9447"
 		},
 		{
 			"ImportPath": "github.com/pkg/errors",
@@ -42,11 +42,11 @@
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
-			"Rev": "4cfeeeb61ae8daa2a4b06572024786e56f23504c"
+			"Rev": "c33d37840d93fc75251f49ab83c5fc8b2faea5e8"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context/ctxhttp",
-			"Rev": "4cfeeeb61ae8daa2a4b06572024786e56f23504c"
+			"Rev": "c33d37840d93fc75251f49ab83c5fc8b2faea5e8"
 		}
 	]
 }
