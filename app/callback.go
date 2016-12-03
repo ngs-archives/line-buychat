@@ -67,8 +67,10 @@ func (app *App) HandleEvent(event *linebot.Event) error {
 		switch message := event.Message.(type) {
 		case *linebot.TextMessage:
 			return app.HandleTextMessage(event.ReplyToken, message.Text)
-			// case *linebot.LocationMessage:
+		case *linebot.LocationMessage:
+			app.Log.Printf("Location %v %v %v %v\n", message.Title, message.Address, message.Latitude, message.Longitude)
 			//   TODO: search local travel books
+			break
 			// case *linebot.ImageMessage:
 			//   TODO: search ISBN
 		}
@@ -89,7 +91,7 @@ func (app *App) ReplyText(replyToken string, text string) error {
 func (app *App) HandleTextMessage(replyToken string, text string) error {
 	items, err := app.searchItems(text)
 	if err != nil {
-		if apiErr, ok := err.(amazon.Error); ok && apiErr.Code == amazon.RequestThrottled {
+		if strings.Contains(err.Error(), requestThrottleError) {
 			return app.ReplyText(replyToken, "申し訳ありません、すこし待ってから、もう一度送信してださい")
 		}
 		return err
@@ -97,59 +99,22 @@ func (app *App) HandleTextMessage(replyToken string, text string) error {
 	if len(items) == 0 {
 		return app.ReplyText(replyToken, `ごめんなさい、"`+text+`" に該当する商品はみつかりませんでした`)
 	}
-	var columns []*linebot.CarouselColumn
-	for _, item := range items {
-		if len(columns) == 5 {
-			break
-		}
-		title := []rune(item.ItemAttributes.Title)
-		if len(title) == 0 || len(item.DetailPageURL) == 0 {
-			continue
-		}
-		if len(title) > 40 {
-			title = title[0:40]
-		}
-		imgURL := item.LargeImage.URL
-		if imgURL == "" {
-			imgURL = noimgURL
-		} else {
-			imgURL = strings.Replace(imgURL, "http://ecx.images-amazon.com/", "https://images-na.ssl-images-amazon.com/", -1)
-		}
-		label := ""
-		if len(item.ItemAttributes.Author) > 0 && len(item.ItemAttributes.Author[0]) > 0 {
-			label = item.ItemAttributes.Author[0]
-		}
-		if label == "" && len(item.ItemAttributes.Artist) > 0 {
-			label = item.ItemAttributes.Artist
-		}
-		if label == "" && len(label) == 0 && len(item.ItemAttributes.Creator.Name) > 0 {
-			label = item.ItemAttributes.Creator.Name
-		}
-		if label == "" {
-			label = item.ItemAttributes.Manufacturer
-		}
-		if label == "" {
-			label = "-"
-		}
-		strTitle := string(title[0:len(title)])
-		postbackData := &PostbackData{
-			Action:   PostbackActionAddCart,
-			ASIN:     item.ASIN,
-			ImageURL: imgURL,
-			Label:    label,
-			Title:    strTitle,
-		}
-		bytes, _ := json.Marshal(postbackData)
-		column := linebot.NewCarouselColumn(
-			imgURL,
-			strTitle,
-			label,
-			linebot.NewPostbackTemplateAction("カートに追加", string(bytes), ""),
-			linebot.NewURITemplateAction("Amazon で見る", item.DetailPageURL),
-		)
-		columns = append(columns, column)
-	}
-	msg := linebot.NewTemplateMessage(`"`+text+`"の検索結果`, linebot.NewCarouselTemplate(columns...))
+	template := getAmazonItemCarousel(items,
+		func(item amazon.Item, imgURL string, label string, title string) []linebot.TemplateAction {
+			postbackData := &PostbackData{
+				Action:   PostbackActionAddCart,
+				ASIN:     item.ASIN,
+				ImageURL: imgURL,
+				Label:    label,
+				Title:    title,
+			}
+			bytes, _ := json.Marshal(postbackData)
+			return []linebot.TemplateAction{
+				linebot.NewPostbackTemplateAction("カートに追加", string(bytes), ""),
+				linebot.NewURITemplateAction("Amazon で見る", item.DetailPageURL),
+			}
+		})
+	msg := linebot.NewTemplateMessage(`"`+text+`"の検索結果`, template)
 	json, _ := msg.MarshalJSON()
 	app.Log.Println(string(json))
 	_, err = app.Line.ReplyMessage(replyToken, msg).Do()
@@ -168,6 +133,10 @@ func (app *App) HandlePostbackData(replyToken string, dataString string, cartKey
 		return app.HandleAddCart(replyToken, data, cartKey)
 	case PostbackActionClearCart:
 		return app.HandleClearCart(replyToken, cartKey)
+	case PostbackActionShowCart:
+		return app.HandleShowCart(replyToken, cartKey)
+	case PostbackActionRemoveCart:
+		return app.HandleRemoveCart(replyToken, data, cartKey)
 	}
 	return nil
 }

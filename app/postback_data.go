@@ -8,6 +8,10 @@ const (
 	PostbackActionAddCart PostbackAction = "add-cart"
 	// PostbackActionClearCart clear-cart
 	PostbackActionClearCart PostbackAction = "clear-cart"
+	// PostbackActionRemoveCart remove-cart
+	PostbackActionRemoveCart PostbackAction = "remove-cart"
+	// PostbackActionShowCart show-cart
+	PostbackActionShowCart PostbackAction = "show-cart"
 )
 
 // PostbackData PostbackData
