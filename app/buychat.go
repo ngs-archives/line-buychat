@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/stvp/rollbar"
+
 	"github.com/gorilla/mux"
 
 	"github.com/garyburd/redigo/redis"
@@ -31,6 +33,10 @@ func New() (*App, error) {
 		return nil, err
 	}
 	logger := log.New(os.Stderr, "[buychat]", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
+	rollbar.Token = os.Getenv("ROLLBAR_KEY")
+	if env := os.Getenv("ROLLBAR_ENV"); env != "" {
+		rollbar.Environment = env
+	}
 	app := &App{
 		Line: line,
 		Log:  logger,

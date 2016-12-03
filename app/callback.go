@@ -10,6 +10,7 @@ import (
 
 	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/ngs/go-amazon-product-advertising-api/amazon"
+	"github.com/stvp/rollbar"
 )
 
 const noimgURL = "https://buychat.s3-ap-northeast-1.amazonaws.com/line-carousel-noimg.png"
@@ -18,21 +19,26 @@ const noimgURL = "https://buychat.s3-ap-northeast-1.amazonaws.com/line-carousel-
 func (app *App) HandleCallback(w http.ResponseWriter, r *http.Request) {
 	events, err := app.Line.ParseRequest(r)
 	if err != nil {
+		rollbar.Error(rollbar.ERR, err)
 		if err == linebot.ErrInvalidSignature {
 			http.Error(w, err.Error(), 400)
 		} else {
 			http.Error(w, err.Error(), 500)
 		}
+		rollbar.Wait()
 		return
 	}
 	log.Printf("Got events %v", events)
 	for _, event := range events {
 		if err := app.HandleEvent(event); err != nil {
+			rollbar.Error(rollbar.ERR, err)
 			app.Log.Printf("Got error %v %v", err, event)
 			if err = app.ReplyText(event.ReplyToken, "ごめんなさい、検索中にエラーが発生してしまいました"); err != nil {
+				rollbar.Error(rollbar.ERR, err)
 				app.Log.Printf("Got error again %v %v", err, event)
 				http.Error(w, err.Error(), 500)
 			}
+			rollbar.Wait()
 			return
 		}
 	}
