@@ -100,9 +100,8 @@ func getAmazonItemCarousel(items []amazon.Item,
 
 func (app *App) searchItems(keyword string) ([]amazon.Item, error) {
 	param := amazon.ItemSearchParameters{
-		Keywords:      keyword,
-		SearchIndex:   amazon.SearchIndexBlended,
-		OnlyAvailable: true,
+		Keywords:    keyword,
+		SearchIndex: amazon.SearchIndexAll,
 		ResponseGroups: []amazon.ItemSearchResponseGroup{
 			amazon.ItemSearchResponseGroupLarge,
 		},
