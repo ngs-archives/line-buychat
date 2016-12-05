@@ -82,8 +82,14 @@ func getAmazonItemCarousel(items []amazon.Item,
 		if label == "" {
 			label = item.ItemAttributes.Manufacturer
 		}
+		if item.OfferSummary.LowestNewPrice.FormattedPrice != "" {
+			if label != "" {
+				label = label + " - "
+			}
+			label = label + item.OfferSummary.LowestNewPrice.FormattedPrice
+		}
 		if label == "" {
-			label = "-"
+			continue
 		}
 		strTitle := string(title[0:len(title)])
 		actions := buildActions(item, imgURL, label, strTitle)
