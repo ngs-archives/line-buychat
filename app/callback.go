@@ -72,7 +72,11 @@ func (app *App) HandleEvent(event *linebot.Event) error {
 			//   TODO: search local travel books
 			return nil
 		case *linebot.ImageMessage:
-			app.Log.Printf("Got image: %v", message.OriginalContentURL)
+			messageContent, err := app.Line.GetMessageContent(message.ID).Do()
+			if err != nil {
+				return err
+			}
+			app.Log.Printf("Got image: %d %v", messageContent.ContentLength, messageContent.ContentType)
 			//   TODO: search ISBN
 			return nil
 		}
