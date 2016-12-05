@@ -170,6 +170,9 @@ func (app *App) HandleImage(replyToken string, content io.ReadCloser) error {
 	if len(itemIDs) > 0 {
 		items, err := app.searchItems(strings.Join(itemIDs, " "))
 		if err != nil {
+			if strings.Contains(err.Error(), requestThrottleError) {
+				return app.ReplyText(replyToken, "申し訳ありません、すこし待ってから、もう一度送信してださい")
+			}
 			return err
 		}
 		return app.replyItemCarousel(replyToken, `バーコード "`+strings.Join(itemIDs, ",")+`" の検索結果`, items)

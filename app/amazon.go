@@ -12,7 +12,7 @@ import (
 
 var currentClient = 0
 
-const retryMax = 0
+const retryMax = 5
 const requestThrottleError = "You are submitting requests too quickly. Please retry your requests at a slower rate."
 
 // Amazon returns amazon client
