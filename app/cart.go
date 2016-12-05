@@ -83,6 +83,7 @@ func (app *App) HandleCart(w http.ResponseWriter, r *http.Request) {
 				if strings.Contains(err.Error(), requestThrottleError) {
 					if retryCount < retryMax {
 						retryCount++
+						app.Log.Printf("Retrying %d/%d", retryCount, retryMax)
 						time.Sleep(time.Second)
 						continue
 					}
@@ -152,6 +153,9 @@ func (app *App) HandleShowCart(replyToken string, cartKey string) error {
 	}
 	items, err := app.lookupItems(ids)
 	if err != nil {
+		if strings.Contains(err.Error(), requestThrottleError) {
+			return app.ReplyText(replyToken, "申し訳ありません、すこし待ってから、もう一度送信してださい")
+		}
 		return err
 	}
 	template := getAmazonItemCarousel(items,

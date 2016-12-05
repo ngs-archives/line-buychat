@@ -120,6 +120,7 @@ func (app *App) searchItems(keyword string) ([]amazon.Item, error) {
 		if err != nil {
 			if strings.Contains(err.Error(), requestThrottleError) && retryCount < retryMax {
 				retryCount++
+				app.Log.Printf("Retrying %d/%d", retryCount, retryMax)
 				time.Sleep(time.Second)
 				continue
 			}
@@ -147,6 +148,7 @@ func (app *App) lookupItems(ids []string) ([]amazon.Item, error) {
 		if err != nil {
 			if strings.Contains(err.Error(), requestThrottleError) && retryCount < retryMax {
 				retryCount++
+				app.Log.Printf("Retrying %d/%d", retryCount, retryMax)
 				time.Sleep(time.Second)
 				continue
 			}
