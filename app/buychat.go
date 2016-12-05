@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	zbar "github.com/PeterCxy/gozbar"
 	"github.com/stvp/rollbar"
 
 	"github.com/gorilla/mux"
@@ -17,6 +18,7 @@ import (
 
 // App main app
 type App struct {
+	ZbarScanner   *zbar.Scanner
 	Line          *linebot.Client
 	AmazonClients []*amazon.Client
 	Log           *log.Logger
@@ -29,6 +31,8 @@ func New() (*App, error) {
 		os.Getenv("LINE_CHANNEL_SECRET"),
 		os.Getenv("LINE_CHANNEL_TOKEN"),
 	)
+	scanner := zbar.NewScanner()
+	scanner.SetConfig(0, zbar.CFG_ENABLE, 1)
 	if err != nil {
 		return nil, err
 	}
@@ -38,8 +42,9 @@ func New() (*App, error) {
 		rollbar.Environment = env
 	}
 	app := &App{
-		Line: line,
-		Log:  logger,
+		Line:        line,
+		Log:         logger,
+		ZbarScanner: scanner,
 	}
 	if err := app.setupAmazonClients(); err != nil {
 		return nil, err
@@ -60,5 +65,6 @@ func (app *App) Run() error {
 	if port == "" {
 		port = "8080"
 	}
+	defer app.ZbarScanner.Destroy()
 	return http.ListenAndServe(":"+port, mw)
 }

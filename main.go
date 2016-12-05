@@ -1,6 +1,9 @@
 package main
 
 import (
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 	"log"
 
 	"github.com/ngs/line-buychat/app"

@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"image"
+	"io"
 	"log"
 	"net/http"
 	"strings"
 
+	zbar "github.com/PeterCxy/gozbar"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/ngs/go-amazon-product-advertising-api/amazon"
 	"github.com/stvp/rollbar"
@@ -76,9 +79,7 @@ func (app *App) HandleEvent(event *linebot.Event) error {
 			if err != nil {
 				return err
 			}
-			app.Log.Printf("Got image: %d %v", messageContent.ContentLength, messageContent.ContentType)
-			//   TODO: search ISBN
-			return nil
+			return app.HandleImage(event.ReplyToken, messageContent.Content)
 		}
 	case linebot.EventTypePostback:
 		return app.HandlePostbackData(event.ReplyToken, event.Postback.Data, cartKey)
@@ -105,6 +106,10 @@ func (app *App) HandleTextMessage(replyToken string, text string) error {
 	if len(items) == 0 {
 		return app.ReplyText(replyToken, `ごめんなさい、"`+text+`" に該当する商品はみつかりませんでした`)
 	}
+	return app.replyItemCarousel(replyToken, `"`+text+`"の検索結果`, items)
+}
+
+func (app *App) replyItemCarousel(replyToken string, altText string, items []amazon.Item) error {
 	template := getAmazonItemCarousel(items,
 		func(item amazon.Item, imgURL string, label string, title string) []linebot.TemplateAction {
 			postbackData := &PostbackData{
@@ -120,10 +125,10 @@ func (app *App) HandleTextMessage(replyToken string, text string) error {
 				linebot.NewURITemplateAction("Amazon で見る", item.DetailPageURL),
 			}
 		})
-	msg := linebot.NewTemplateMessage(`"`+text+`"の検索結果`, template)
+	msg := linebot.NewTemplateMessage(altText, template)
 	json, _ := msg.MarshalJSON()
 	app.Log.Println(string(json))
-	_, err = app.Line.ReplyMessage(replyToken, msg).Do()
+	_, err := app.Line.ReplyMessage(replyToken, msg).Do()
 	return err
 }
 
@@ -145,4 +150,29 @@ func (app *App) HandlePostbackData(replyToken string, dataString string, cartKey
 		return app.HandleRemoveCart(replyToken, data, cartKey)
 	}
 	return nil
+}
+
+// HandleImage handles image
+func (app *App) HandleImage(replyToken string, content io.ReadCloser) error {
+	src, _, err := image.Decode(content)
+	if err != nil {
+		return app.ReplyText(replyToken, "バーコードを検知できませんでした")
+	}
+	img := zbar.FromImage(src)
+	itemIDs := []string{}
+	app.ZbarScanner.Scan(img)
+	if img.First() != nil {
+		img.First().Each(func(text string) {
+			itemIDs = append(itemIDs, text)
+		})
+	}
+	app.Log.Println(itemIDs)
+	if len(itemIDs) > 0 {
+		items, err := app.searchItems(strings.Join(itemIDs, " "))
+		if err != nil {
+			return err
+		}
+		return app.replyItemCarousel(replyToken, `バーコード "`+strings.Join(itemIDs, ",")+`" の検索結果`, items)
+	}
+	return app.ReplyText(replyToken, "バーコードを検知できませんでした")
 }

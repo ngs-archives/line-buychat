@@ -7,6 +7,10 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/PeterCxy/gozbar",
+			"Rev": "0b38584c8ebd9542616bac302395c63a2df9776d"
+		},
+		{
 			"ImportPath": "github.com/garyburd/redigo/internal",
 			"Comment": "v1.0.0-5-gffa8d46",
 			"Rev": "ffa8d46ada782d81cfda81a0fbd9f45ceae448e8"
