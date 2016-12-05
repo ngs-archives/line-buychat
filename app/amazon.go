@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/ngs/go-amazon-product-advertising-api/amazon"
@@ -11,6 +12,7 @@ import (
 
 var currentClient = 0
 
+const retryMax = 0
 const requestThrottleError = "You are submitting requests too quickly. Please retry your requests at a slower rate."
 
 // Amazon returns amazon client
@@ -112,12 +114,23 @@ func (app *App) searchItems(keyword string) ([]amazon.Item, error) {
 			amazon.ItemSearchResponseGroupLarge,
 		},
 	}
-	res, err := app.Amazon().ItemSearch(param).Do()
-	if err != nil {
-		app.Log.Printf("Got error %v %v", err, param)
-		return []amazon.Item{}, err
+	retryCount := 0
+	for {
+		res, err := app.Amazon().ItemSearch(param).Do()
+		if err != nil {
+			if strings.Contains(err.Error(), requestThrottleError) && retryCount < retryMax {
+				retryCount++
+				time.Sleep(time.Second)
+				continue
+			}
+			if strings.Contains(err.Error(), string(amazon.NoExactMatches)) {
+				return []amazon.Item{}, nil
+			}
+			app.Log.Printf("Got error %v %v", err, param)
+			return []amazon.Item{}, err
+		}
+		return res.Items.Item, nil
 	}
-	return res.Items.Item, nil
 }
 
 func (app *App) lookupItems(ids []string) ([]amazon.Item, error) {
@@ -128,9 +141,17 @@ func (app *App) lookupItems(ids []string) ([]amazon.Item, error) {
 			amazon.ItemLookupResponseGroupLarge,
 		},
 	}
-	res, err := app.Amazon().ItemLookup(param).Do()
-	if err != nil {
-		return []amazon.Item{}, err
+	retryCount := 0
+	for {
+		res, err := app.Amazon().ItemLookup(param).Do()
+		if err != nil {
+			if strings.Contains(err.Error(), requestThrottleError) && retryCount < retryMax {
+				retryCount++
+				time.Sleep(time.Second)
+				continue
+			}
+			return []amazon.Item{}, err
+		}
+		return res.Items.Item, nil
 	}
-	return res.Items.Item, nil
 }

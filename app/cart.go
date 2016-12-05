@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
@@ -75,18 +76,27 @@ func (app *App) HandleCart(w http.ResponseWriter, r *http.Request) {
 		for asin, quantity := range quantities {
 			params.Items.AddASIN(asin, quantity)
 		}
-		res, err := app.Amazon().CartCreate(params).Do()
-		if err != nil {
-			if strings.Contains(err.Error(), requestThrottleError) {
-				http.Error(w, "申し訳ありません、すこし待ってから、もう一度開いてください", 400)
+		retryCount := 0
+		for {
+			res, err := app.Amazon().CartCreate(params).Do()
+			if err != nil {
+				if strings.Contains(err.Error(), requestThrottleError) {
+					if retryCount < retryMax {
+						retryCount++
+						time.Sleep(time.Second)
+						continue
+					}
+					http.Error(w, "申し訳ありません、すこし待ってから、もう一度開いてください", 400)
+					return
+				}
+				http.Error(w, err.Error(), 500)
+				rollbar.Error(rollbar.ERR, err)
+				rollbar.Wait()
 				return
 			}
-			http.Error(w, err.Error(), 500)
-			rollbar.Error(rollbar.ERR, err)
-			rollbar.Wait()
+			http.Redirect(w, r, res.Cart.MobileCartURL, 303)
 			return
 		}
-		http.Redirect(w, r, res.Cart.MobileCartURL, 303)
 	} else {
 		http.Error(w, "カートにまだ何も追加されていません", 404)
 	}
