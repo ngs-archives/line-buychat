@@ -70,9 +70,11 @@ func (app *App) HandleEvent(event *linebot.Event) error {
 		case *linebot.LocationMessage:
 			app.Log.Printf("Location %v %v %v %v\n", message.Title, message.Address, message.Latitude, message.Longitude)
 			//   TODO: search local travel books
-			break
-			// case *linebot.ImageMessage:
+			return nil
+		case *linebot.ImageMessage:
+			app.Log.Printf("Got image: %v", message.OriginalContentURL)
 			//   TODO: search ISBN
+			return nil
 		}
 	case linebot.EventTypePostback:
 		return app.HandlePostbackData(event.ReplyToken, event.Postback.Data, cartKey)
