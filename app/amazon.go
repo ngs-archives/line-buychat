@@ -158,11 +158,15 @@ func (app *App) lookupItems(ids []string) ([]amazon.Item, error) {
 	}
 }
 
-func (app *App) searchLocalBooks(area string) ([]amazon.Item, error) {
+func (app *App) searchLocalBooks(area []string) ([]amazon.Item, error) {
+	power := "(" + strings.Join(area, " or ") + ")" +
+		" and not 住宅地図 and not ゼンリン and not 小説 and not 過去問 and not コミック and not 時刻表 and not author: " +
+		strings.Join(area, " and not author: ") + " and (旅行 or 観光 or グルメ or ガイド or 歩 or 散策 or 散歩)"
 	param := amazon.ItemSearchParameters{
 		SearchIndex:    amazon.SearchIndexBooks,
 		ResponseGroups: []amazon.ItemSearchResponseGroup{amazon.ItemSearchResponseGroupLarge},
-		Power:          area + " and not 住宅地図 and not ゼンリン and (旅行 or 観光 or グルメ or ガイド or 歩 or 散策 or 散歩)",
+		Power:          power,
+		BrowseNode:     "492090",
 	}
 	retryCount := 0
 	for {

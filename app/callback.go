@@ -199,16 +199,18 @@ func (app *App) HandleLocation(replyToken string, latitude float64, longitude fl
 		rollbar.Wait()
 	} else {
 		addrs := res.Feature[0].Property.AddressElement
+		areaNames := []string{}
 		for i := len(addrs) - 1; i >= 0; i-- {
 			name := norm.NFKC.String(addrs[i].Name)
 			level := addrs[i].Level
-			if numberRE.MatchString(name) || name == "" || level == "oaza" || level == "aza" || strings.HasPrefix(level, "detail") {
+			if numberRE.MatchString(name) || level == "prefecture" {
 				continue
 			}
-			items, _ := app.searchLocalBooks(name)
-			if len(items) > 0 {
-				return app.replyItemCarousel(replyToken, `"`+name+`" の検索結果`, items)
-			}
+			areaNames = append(areaNames, name)
+		}
+		items, _ := app.searchLocalBooks(areaNames)
+		if len(items) > 0 {
+			return app.replyItemCarousel(replyToken, `"`+strings.Join(areaNames, ", ")+`" の検索結果`, items)
 		}
 	}
 	return app.ReplyText(replyToken, "エリアに関連する本は見つかりませんでした。")
