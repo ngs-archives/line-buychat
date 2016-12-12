@@ -30,6 +30,16 @@ export AWS_PRODUCT_REGION=JP
 export AWS_ASSOCIATE_TAG=buychat-22
 ```
 
+Deploy
+------
+
+```sh
+heroku git:remote --app line-buychat
+heroku plugins:install heroku-container-registry
+heroku container:login
+heroku container:push web
+```
+
 License
 -------
 

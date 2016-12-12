@@ -59,7 +59,7 @@ func getAmazonItemCarousel(items []amazon.Item,
 			break
 		}
 		title := []rune(item.ItemAttributes.Title)
-		if len(title) == 0 || len(item.DetailPageURL) == 0 {
+		if len(title) == 0 || len(item.DetailPageURL) == 0 || len(item.DetailPageURL) > 1000 {
 			continue
 		}
 		if len(title) > 40 {
