@@ -8,12 +8,15 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 
 	zbar "github.com/PeterCxy/gozbar"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/ngs/go-amazon-product-advertising-api/amazon"
+	yolp "github.com/ngs/go-yolp"
 	"github.com/stvp/rollbar"
+	"golang.org/x/text/unicode/norm"
 )
 
 const noimgURL = "https://buychat.s3-ap-northeast-1.amazonaws.com/line-carousel-noimg.png"
@@ -71,8 +74,7 @@ func (app *App) HandleEvent(event *linebot.Event) error {
 		case *linebot.TextMessage:
 			return app.HandleTextMessage(event.ReplyToken, message.Text)
 		case *linebot.LocationMessage:
-			app.Log.Printf("Location %v %v %v %v\n", message.Title, message.Address, message.Latitude, message.Longitude)
-			//   TODO: search local travel books
+			app.HandleLocation(event.ReplyToken, message.Latitude, message.Longitude)
 			return nil
 		case *linebot.ImageMessage:
 			messageContent, err := app.Line.GetMessageContent(message.ID).Do()
@@ -182,4 +184,32 @@ func (app *App) HandleImage(replyToken string, content io.ReadCloser) error {
 		return app.ReplyText(replyToken, `ごめんなさい、バーコード "`+str+`" に該当する商品はみつかりませんでした`)
 	}
 	return app.ReplyText(replyToken, "バーコードを検知できませんでした")
+}
+
+// HandleLocation handles location
+func (app *App) HandleLocation(replyToken string, latitude float64, longitude float64) error {
+	numberRE := regexp.MustCompile("^\\d")
+	res, err := app.YOLP.ReverseGeocoder(yolp.GeocoderParams{
+		Latitude:  latitude,
+		Longitude: longitude,
+		Datum:     yolp.WGS,
+	}).Do()
+	if err != nil {
+		rollbar.Error(rollbar.ERR, err)
+		rollbar.Wait()
+	} else {
+		addrs := res.Feature[0].Property.AddressElement
+		for i := len(addrs) - 1; i >= 0; i-- {
+			name := norm.NFKC.String(addrs[i].Name)
+			level := addrs[i].Level
+			if numberRE.MatchString(name) || name == "" || level == "oaza" || level == "aza" || strings.HasPrefix(level, "detail") {
+				continue
+			}
+			items, _ := app.searchLocalBooks(name)
+			if len(items) > 0 {
+				return app.replyItemCarousel(replyToken, `"`+name+`" の検索結果`, items)
+			}
+		}
+	}
+	return app.ReplyText(replyToken, "エリアに関連する本は見つかりませんでした。")
 }

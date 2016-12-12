@@ -3,59 +3,38 @@
 	"GoVersion": "go1.7",
 	"GodepVersion": "v74",
 	"Packages": [
-		"./..."
+		"golang.org/x/text/unicode/norm",
+		"github.com/ngs/go-yolp"
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/PeterCxy/gozbar",
-			"Rev": "0b38584c8ebd9542616bac302395c63a2df9776d"
+			"ImportPath": "github.com/ngs/go-yolp",
+			"Rev": "c53ac2607afcde28a0bf7dee6379001877abdc88"
 		},
 		{
-			"ImportPath": "github.com/garyburd/redigo/internal",
-			"Comment": "v1.0.0-5-gffa8d46",
-			"Rev": "ffa8d46ada782d81cfda81a0fbd9f45ceae448e8"
+			"ImportPath": "golang.org/x/text/internal/gen",
+			"Rev": "47a200a05c8b3fd1b698571caecbb68beb2611ec"
 		},
 		{
-			"ImportPath": "github.com/garyburd/redigo/redis",
-			"Comment": "v1.0.0-5-gffa8d46",
-			"Rev": "ffa8d46ada782d81cfda81a0fbd9f45ceae448e8"
+			"ImportPath": "golang.org/x/text/internal/testtext",
+			"Rev": "47a200a05c8b3fd1b698571caecbb68beb2611ec"
 		},
 		{
-			"ImportPath": "github.com/gorilla/mux",
-			"Comment": "v1.1-25-g0a192a1",
-			"Rev": "0a192a193177452756c362c20087ddafcf6829c4"
+			"ImportPath": "golang.org/x/text/transform",
+			"Rev": "47a200a05c8b3fd1b698571caecbb68beb2611ec"
 		},
 		{
-			"ImportPath": "github.com/lestrrat/go-apache-logformat",
-			"Comment": "v2.0.0-4-g0f5817c",
-			"Rev": "0f5817c5c9e626d408c4d68e3d90fd7697e97d5f"
+			"ImportPath": "golang.org/x/text/unicode/cldr",
+			"Rev": "47a200a05c8b3fd1b698571caecbb68beb2611ec"
 		},
 		{
-			"ImportPath": "github.com/line/line-bot-sdk-go/linebot",
-			"Comment": "1.0.0-40-g45c6ba6",
-			"Rev": "45c6ba6104821f9dde1db5ca8886b11d903e1e9e"
+			"ImportPath": "golang.org/x/text/unicode/norm",
+			"Rev": "47a200a05c8b3fd1b698571caecbb68beb2611ec"
 		},
 		{
-			"ImportPath": "github.com/ngs/go-amazon-product-advertising-api/amazon",
-			"Rev": "fa986146f2068a05fd276154d15f7d2216c36778"
-		},
-		{
-			"ImportPath": "github.com/pkg/errors",
-			"Comment": "v0.7.1",
-			"Rev": "17b591df37844cde689f4d5813e5cea0927d8dd2"
-		},
-		{
-			"ImportPath": "github.com/stvp/rollbar",
-			"Comment": "v0.4.0-6-g3eb4713",
-			"Rev": "3eb4713e2655cd1be805795be31b3f85b74b05fd"
-		},
-		{
-			"ImportPath": "golang.org/x/net/context",
-			"Rev": "c33d37840d93fc75251f49ab83c5fc8b2faea5e8"
-		},
-		{
-			"ImportPath": "golang.org/x/net/context/ctxhttp",
-			"Rev": "c33d37840d93fc75251f49ab83c5fc8b2faea5e8"
+			"ImportPath": "gopkg.in/h2non/gock.v1",
+			"Comment": "v1.0.1",
+			"Rev": "94f351a7b5b664969d46263771db3e834edca0f1"
 		}
 	]
 }

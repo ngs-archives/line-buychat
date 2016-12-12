@@ -157,3 +157,26 @@ func (app *App) lookupItems(ids []string) ([]amazon.Item, error) {
 		return res.Items.Item, nil
 	}
 }
+
+func (app *App) searchLocalBooks(area string) ([]amazon.Item, error) {
+	param := amazon.ItemSearchParameters{
+		SearchIndex:    amazon.SearchIndexBooks,
+		ResponseGroups: []amazon.ItemSearchResponseGroup{amazon.ItemSearchResponseGroupLarge},
+		Power:          area + " and not 住宅地図 and not ゼンリン and (旅行 or 観光 or グルメ or ガイド or 歩 or 散策 or 散歩)",
+	}
+	retryCount := 0
+	for {
+		res, err := app.Amazon().ItemSearch(param).Do()
+		if err != nil {
+			if strings.Contains(err.Error(), requestThrottleError) && retryCount < retryMax {
+				retryCount++
+				app.Log.Printf("Retrying %d/%d", retryCount, retryMax)
+				time.Sleep(time.Second)
+				continue
+			}
+			return []amazon.Item{}, err
+		}
+		return res.Items.Item, nil
+
+	}
+}

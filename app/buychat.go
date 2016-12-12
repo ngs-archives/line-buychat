@@ -14,6 +14,7 @@ import (
 	apachelog "github.com/lestrrat/go-apache-logformat"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"github.com/ngs/go-amazon-product-advertising-api/amazon"
+	yolp "github.com/ngs/go-yolp"
 )
 
 // App main app
@@ -23,6 +24,7 @@ type App struct {
 	AmazonClients []*amazon.Client
 	Log           *log.Logger
 	RedisConn     redis.Conn
+	YOLP          *yolp.Client
 }
 
 // New returns new app
@@ -47,6 +49,9 @@ func New() (*App, error) {
 		ZbarScanner: scanner,
 	}
 	if err := app.setupAmazonClients(); err != nil {
+		return nil, err
+	}
+	if err := app.setupYOLPClient(); err != nil {
 		return nil, err
 	}
 	if err := app.SetupRedis(); err != nil {
