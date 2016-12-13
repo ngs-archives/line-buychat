@@ -6,6 +6,7 @@ import (
 	"os"
 
 	zbar "github.com/PeterCxy/gozbar"
+	"github.com/nlopes/slack"
 	"github.com/stvp/rollbar"
 
 	"github.com/gorilla/mux"
@@ -25,6 +26,7 @@ type App struct {
 	Log           *log.Logger
 	RedisConn     redis.Conn
 	YOLP          *yolp.Client
+	Slack         *slack.Client
 }
 
 // New returns new app
@@ -55,6 +57,9 @@ func New() (*App, error) {
 		return nil, err
 	}
 	if err := app.SetupRedis(); err != nil {
+		return nil, err
+	}
+	if err := app.setupSlack(); err != nil {
 		return nil, err
 	}
 	return app, nil
