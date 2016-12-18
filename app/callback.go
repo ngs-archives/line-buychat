@@ -72,6 +72,10 @@ func (app *App) HandleEvent(event *linebot.Event) error {
 	case linebot.EventTypeMessage:
 		switch message := event.Message.(type) {
 		case *linebot.TextMessage:
+			text := strings.ToLower(message.Text)
+			if text == "カートを表示" || text == "show cart" {
+				return app.HandleShowCart(event.ReplyToken, cartKey)
+			}
 			return app.HandleTextMessage(event.ReplyToken, message.Text)
 		case *linebot.LocationMessage:
 			app.HandleLocation(event.ReplyToken, message.Latitude, message.Longitude)
