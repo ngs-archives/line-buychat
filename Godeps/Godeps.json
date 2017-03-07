@@ -3,13 +3,72 @@
 	"GoVersion": "go1.7",
 	"GodepVersion": "v74",
 	"Packages": [
-		"golang.org/x/text/unicode/norm",
-		"github.com/ngs/go-yolp"
+		"./..."
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/PeterCxy/gozbar",
+			"Rev": "0b38584c8ebd9542616bac302395c63a2df9776d"
+		},
+		{
+			"ImportPath": "github.com/garyburd/redigo/internal",
+			"Comment": "v1.0.0-12-g0708def",
+			"Rev": "0708def8b0cf3a05acdf44a7f28b864c2958921d"
+		},
+		{
+			"ImportPath": "github.com/garyburd/redigo/redis",
+			"Comment": "v1.0.0-12-g0708def",
+			"Rev": "0708def8b0cf3a05acdf44a7f28b864c2958921d"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Comment": "v1.1-25-g0a192a1",
+			"Rev": "0a192a193177452756c362c20087ddafcf6829c4"
+		},
+		{
+			"ImportPath": "github.com/lestrrat/go-apache-logformat",
+			"Comment": "v2.0.0-4-g0f5817c",
+			"Rev": "0f5817c5c9e626d408c4d68e3d90fd7697e97d5f"
+		},
+		{
+			"ImportPath": "github.com/line/line-bot-sdk-go/linebot",
+			"Comment": "1.0.0-38-gb7e1bd1",
+			"Rev": "b7e1bd128fef0e6a532d1afce049cbcd8dc5f4c8"
+		},
+		{
+			"ImportPath": "github.com/ngs/go-amazon-product-advertising-api/amazon",
+			"Rev": "61566202d7a2a0e9cd8b36c4208b6f96b72ccf2b"
+		},
+		{
 			"ImportPath": "github.com/ngs/go-yolp",
 			"Rev": "c53ac2607afcde28a0bf7dee6379001877abdc88"
+		},
+		{
+			"ImportPath": "github.com/nlopes/slack",
+			"Comment": "v0.0.1-152-ge595e9d",
+			"Rev": "e595e9d8590a04ff76407e4e7d1791d25b095c66"
+		},
+		{
+			"ImportPath": "github.com/pkg/errors",
+			"Comment": "v0.7.1",
+			"Rev": "17b591df37844cde689f4d5813e5cea0927d8dd2"
+		},
+		{
+			"ImportPath": "github.com/stvp/rollbar",
+			"Comment": "v0.4.0-6-g3eb4713",
+			"Rev": "3eb4713e2655cd1be805795be31b3f85b74b05fd"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "8b4af36cd21a1f85a7484b49feb7c79363106d8e"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context/ctxhttp",
+			"Rev": "8b4af36cd21a1f85a7484b49feb7c79363106d8e"
+		},
+		{
+			"ImportPath": "golang.org/x/net/websocket",
+			"Rev": "8b4af36cd21a1f85a7484b49feb7c79363106d8e"
 		},
 		{
 			"ImportPath": "golang.org/x/text/internal/gen",
